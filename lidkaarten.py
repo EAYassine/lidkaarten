@@ -1,93 +1,47 @@
+from dotenv import load_dotenv
+import os
 from PIL import Image, ImageDraw, ImageFont
 import pandas as pd
 import numpy as np
-import PySimpleGUI as sg
-import os
 
-layout = [
-    [sg.Text("Upload een excel bestand met in de eerste kolom de namen van de leden")],
-    [sg.Text("      - Bestandstype: .xlsx")],
-    [sg.InputText(key="LEDENLIJST_BROWSE"), sg.FileBrowse("Browse")],
-    [sg.Button("Upload",key = 'uploadbutton1')],
-    [sg.Text("Upload een foto van een template voor de lidkaarten")],
-    [sg.Text("      - Bestandstype: .png")],
-    [sg.Text("      - Aspect ratio: 16:9")],
-    [sg.InputText(key="TEMPLATE_BROWSE"), sg.FileBrowse("Browse")],
-    [sg.Button("Upload",key = 'uploadbutton2')],
-    [sg.Text("Kies waar je de lidkaarten wil opslaan en klik op op 'Download'")],
-    [sg.InputText(key='DOWNLOAD_BROWSE'), sg.FolderBrowse("Browse")],
-    [sg.Button("Download",key='downloadbutton')],
-]
+load_dotenv()
 
-custom_font = ('Open Sans', 14,"bold")
+def maak_lidkaarten(leden_path,template_path,download_path):
+    leden = pd.read_fwf(leden_path) # reads txt file with each member on separate line 
+    template = Image.open(template_path) # reads pdf of membership card template
 
-sg.LOOK_AND_FEEL_TABLE['MyCreatedTheme'] = {
-    'BACKGROUND': '#014D22',
-    'TEXT': '#FFFFFF',        
-    'INPUT': '#FFFFFF',       
-    'TEXT_INPUT': '#014D22',  
-    'SCROLL': '#014D22',      
-    'BUTTON': ('#014D22', '#FFFFFF'),  
-    'PROGRESS': ('#014D22', '#FFFFFF'),  
-    'BORDER': 1,
-    'SLIDER_DEPTH': 0,
-    'PROGRESS_DEPTH': 0,
-}
-  
-sg.theme('MyCreatedTheme') 
+    leden = pd.read_fwf(leden_path,header=None)[0].values.tolist() # reads txt file with each member on separate line 
 
-window = sg.Window("KaartjesGenerator", layout,font=custom_font)
+    w, h = template.size
 
-while True:
-    event, values = window.read()
+    naam_font = ImageFont.truetype('FRADMIT',h/8.5)
+    lidnummer_font = ImageFont.truetype('FRADMIT',h/15)
 
-    if event == sg.WINDOW_CLOSED:
-        break
+    titel_jaar = Image.new('RGBA', (int(h),int(h/3)))
+    dr = ImageDraw.Draw(titel_jaar)
+    titel_font = ImageFont.truetype('FRADM', h/7.5)
+    jaar_font = ImageFont.truetype('FRADM', h/21)
 
-    if event == "uploadbutton1":
-        ledenlijst_path = values["LEDENLIJST_BROWSE"]
+    titel = 'LIDKAART'
+    jaar = '2023-2024' 
 
-    if event == "uploadbutton2":
-        template_path = values["TEMPLATE_BROWSE"]
+    dr.text((0, 0), titel, font=titel_font, fill='white')
+    dr.text((w/2.9,w/23), jaar, font=jaar_font, fill='white')
+    titel_jaar = titel_jaar.rotate(90,  expand=1)
+
+    lidkaarten = []
+
+    for i,lid in enumerate(leden):
+        lidnummer = i + 1
+        lidkaart = Image.open(template_path) # reads pdf of membership card template
+        lidkaart.paste(titel_jaar, (int(w/20),int(-w/25)), titel_jaar)
+        naam_nummer = ImageDraw.Draw(lidkaart)
+        naam_nummer.text((w*0.232,w*0.25), lid, fill='black', font=naam_font)
+        naam_nummer.text((w*0.235,w*0.35),f'Lidnummer {str(lidnummer)}', fill='black', font=lidnummer_font)
+        lidkaarten.append(lidkaart)
+    
+        template = Image.open(template_path)
         
-    if event == "downloadbutton":
-        download_path = values["DOWNLOAD_BROWSE"]
-        
-        df = pd.read_excel(ledenlijst_path)
-        ledenlijst = np.array(df)
-
-        file = template_path
-
-        naam_font = ImageFont.truetype('FRADMIT',350) # getal na lettertype = lettergrootte
-        lidnummer_font = ImageFont.truetype('FRADMIT',200)
-
-
-        tim = Image.new('RGBA', (3000,1000), (0,0,0,0))
-        dr = ImageDraw.Draw(tim)
-        ft = ImageFont.truetype('FRADM', 400)
-        ft2 = ImageFont.truetype('FRADM', 125)
-
-
-        titel = 'LIDKAART'
-        jaar = '2022-2023' 
-
-        dr.text((0, 0), titel, font=ft, fill='white')
-        dr.text((1820,225), jaar, font=ft2, fill='white')
-        tim = tim.rotate(90,  expand=1)
-
-        lidkaarten = [0] * (len(ledenlijst))
-        for i in range(0,len(ledenlijst)):
-            achtergrond = Image.open(file)
-            achtergrond.paste(tim, (240,-280), tim)
-            letters = ImageDraw.Draw(achtergrond)
-            letters.text((1200,1500),str(ledenlijst[i]).replace('[','').replace(']','').replace("'",'')  
-        ,fill='black',font=naam_font)
-            letters.text((1200,2100),'Lidnummer ' + str(i+1),fill='black',font=lidnummer_font)
-            lidkaarten[i]=achtergrond
-
-        achtergrond = Image.open(file)
-        achtergrond.save(os.path.join(download_path, "lidkaarten.pdf"),save_all=True,append_images=lidkaarten[1:])
-
-        sg.popup(f"Lidkaarten opgeslagen als pdf in :\n{download_path}")
-
-window.close()
+        template.save(os.path.join(download_path, 'lidkaarten.pdf'), save_all=True, append_images=lidkaarten)
+    
+    return None
