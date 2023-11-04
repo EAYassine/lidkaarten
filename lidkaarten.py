@@ -14,13 +14,13 @@ def maak_lidkaarten(leden_path,template_path,download_path):
 
     w, h = template.size
 
-    naam_font = ImageFont.truetype('FRADMIT',h/8.5)
-    lidnummer_font = ImageFont.truetype('FRADMIT',h/15)
+    naam_font = ImageFont.truetype('arial.ttf',h/8.5)
+    lidnummer_font = ImageFont.truetype('arial.ttf',h/15)
 
     titel_jaar = Image.new('RGBA', (int(h),int(h/3)))
     dr = ImageDraw.Draw(titel_jaar)
-    titel_font = ImageFont.truetype('FRADM', h/7.5)
-    jaar_font = ImageFont.truetype('FRADM', h/21)
+    titel_font = ImageFont.truetype('arial.ttf', h/7.5)
+    jaar_font = ImageFont.truetype('arial.ttf', h/21)
 
     titel = 'LIDKAART'
     jaar = '2023-2024' 
