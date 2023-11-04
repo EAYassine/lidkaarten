@@ -3,6 +3,8 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 import pandas as pd
 import numpy as np
+import requests
+from io import BytesIO
 
 load_dotenv()
 
@@ -14,13 +16,16 @@ def maak_lidkaarten(leden_path,template_path,download_path):
 
     w, h = template.size
 
-    naam_font = ImageFont.truetype('arial.ttf',h/8.5)
-    lidnummer_font = ImageFont.truetype('arial.ttf',h/15)
+    req_fradmit = requests.get("https://github.com/xiayukun/font/blob/2eba79067a58542b8ec49ef4fd36f04d84701ca1/FRADMIT.TTF")
+    red_fradm = requests.get("https://github.com/xiayukun/font/blob/2eba79067a58542b8ec49ef4fd36f04d84701ca1/FRADM.TTF")
+
+    naam_font = ImageFont.truetype(BytesIO(req_fradmit.content),h/8.5)
+    lidnummer_font = ImageFont.truetype(BytesIO(req_fradmit.content),h/15)
 
     titel_jaar = Image.new('RGBA', (int(h),int(h/3)))
     dr = ImageDraw.Draw(titel_jaar)
-    titel_font = ImageFont.truetype('arial.ttf', h/7.5)
-    jaar_font = ImageFont.truetype('arial.ttf', h/21)
+    titel_font = ImageFont.truetype(BytesIO(req_fradm.content), h/7.5)
+    jaar_font = ImageFont.truetype(BytesIO(req_fradm.content), h/21)
 
     titel = 'LIDKAART'
     jaar = '2023-2024' 
