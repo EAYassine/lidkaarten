@@ -17,7 +17,7 @@ def maak_lidkaarten(leden_path,template_path,download_path):
     w, h = template.size
 
     req_fradmit = requests.get("https://github.com/xiayukun/font/blob/2eba79067a58542b8ec49ef4fd36f04d84701ca1/FRADMIT.TTF?raw=true")
-    red_fradm = requests.get("https://github.com/xiayukun/font/blob/2eba79067a58542b8ec49ef4fd36f04d84701ca1/FRADM.TTF?raw=true")
+    req_fradm = requests.get("https://github.com/xiayukun/font/blob/2eba79067a58542b8ec49ef4fd36f04d84701ca1/FRADM.TTF?raw=true")
 
     naam_font = ImageFont.truetype(BytesIO(req_fradmit.content),h/8.5)
     lidnummer_font = ImageFont.truetype(BytesIO(req_fradmit.content),h/15)
